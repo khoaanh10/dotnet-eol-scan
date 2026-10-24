@@ -1,0 +1,7 @@
+services:
+  api:
+    image: mcr.microsoft.com/dotnet/aspnet:6.0-alpine
+  worker:
+    image: "mcr.microsoft.com/dotnet/runtime:${DOTNET_TAG}"
+  db:
+    image: postgres:16

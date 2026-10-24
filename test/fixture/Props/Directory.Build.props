@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <LibTfms>net8.0;net48</LibTfms>
+  </PropertyGroup>
+</Project>

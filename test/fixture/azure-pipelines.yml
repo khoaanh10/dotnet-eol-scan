@@ -1,0 +1,10 @@
+steps:
+- task: UseDotNet@2
+  displayName: Install SDK
+  inputs:
+    packageType: sdk
+    version: '7.0.x'
+- task: UseDotNet@2
+  inputs:
+    useGlobalJson: true
+- script: dotnet build

@@ -1,0 +1,24 @@
+# Copy to .github/workflows/dotnet-eol.yml
+# Fails the job when anything in the repo is already out of support,
+# and writes a Markdown report to the job summary.
+name: .NET support check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1' # every Monday: dates move even when the code doesn't
+
+jobs:
+  dotnet-eol-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Scan for end-of-life .NET versions
+        shell: bash # implies `set -o pipefail`, so the scanner's exit code is kept
+        # Use --fail-on soon to also fail on versions ending within 90 days (--warn-days).
+        run: npx --yes dotnet-eol-scan@0.2.0 . --md --fail-on eol | tee -a "$GITHUB_STEP_SUMMARY"

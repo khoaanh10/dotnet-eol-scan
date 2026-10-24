@@ -1,0 +1,41 @@
+{
+  "name": "dotnet-eol-scan",
+  "version": "0.2.0",
+  "description": "Find .NET target frameworks, SDK pins, Docker images and CI setups in a repo that are out of support or about to be (.NET 8/9 end support 2026-11-10).",
+  "main": "index.js",
+  "bin": {
+    "dotnet-eol-scan": "index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE",
+    "examples/"
+  ],
+  "scripts": {
+    "test": "node test/run.js"
+  },
+  "keywords": [
+    "dotnet",
+    "end-of-life",
+    "eol",
+    "net8",
+    "net9",
+    "net10",
+    "upgrade",
+    "security",
+    "ci"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khoaanh10/dotnet-eol-scan.git"
+  },
+  "homepage": "https://github.com/khoaanh10/dotnet-eol-scan#readme",
+  "bugs": {
+    "url": "https://github.com/khoaanh10/dotnet-eol-scan/issues"
+  }
+}
