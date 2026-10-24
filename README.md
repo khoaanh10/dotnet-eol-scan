@@ -14,7 +14,7 @@ Requires Node.js 18 or later. Nothing is installed into your project and nothing
 
 ```bash
 # from the root of your .NET repository
-npx dotnet-eol-scan
+npx github:khoaanh10/dotnet-eol-scan
 ```
 
 Or without npm, from a clone of this repository:
@@ -96,7 +96,7 @@ The key step:
 ```yaml
 - name: Scan for end-of-life .NET versions
   shell: bash
-  run: npx --yes dotnet-eol-scan@0.2.0 . --md --fail-on eol | tee -a "$GITHUB_STEP_SUMMARY"
+  run: npx --yes github:khoaanh10/dotnet-eol-scan#v0.2.0 . --md --fail-on eol | tee -a "$GITHUB_STEP_SUMMARY"
 ```
 
 ## Limitations
