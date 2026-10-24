@@ -123,4 +123,4 @@ Issues and pull requests are welcome, especially fixture files from real-world r
 
 ---
 
-Need help upgrading a .NET app? Fixed-price upgrades — link coming soon.
+Need help upgrading a .NET app? Fixed-price upgrades to .NET 10 → [LTS Lift](https://khoaanh10.github.io/ltslift/)
