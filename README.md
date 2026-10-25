@@ -99,7 +99,7 @@ The key step:
 ```yaml
 - name: Scan for end-of-life .NET versions
   shell: bash
-  run: npx --yes github:khoaanh10/dotnet-eol-scan#v0.2.0 . --md --fail-on eol | tee -a "$GITHUB_STEP_SUMMARY"
+  run: npx --yes github:khoaanh10/dotnet-eol-scan#v0.3.0 . --md --fail-on eol | tee -a "$GITHUB_STEP_SUMMARY"
 ```
 
 ## Limitations
