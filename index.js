@@ -28,6 +28,19 @@ const FRAMEWORK_EOL = {
 // Source: https://learn.microsoft.com/azure/azure-functions/migrate-dotnet-to-isolated-model
 const FUNCTIONS_IN_PROCESS_EOL = '2026-11-10';
 
+// Exchange Online SMTP AUTH (client submission, smtp.office365.com:587) Basic authentication.
+// Sources (checked 2026-10-25):
+//   https://techcommunity.microsoft.com/blog/exchange/updated-exchange-online-smtp-auth-basic-authentication-deprecation-timeline/4489835 (Exchange Team blog; page title confirmed, body not retrievable by the tool)
+//   https://mc.merill.net/message/MC786329 (mirror of Microsoft 365 Message Center MC786329, updated 2026-01-27)
+// Timeline: unchanged through December 2026; at the END OF DECEMBER 2026 Basic auth is disabled by default for existing
+// tenants (admins can still re-enable it); final removal date to be announced in the second half of 2027.
+// Microsoft gives only the month, so 2026-12-31 is used. Recommended: OAuth 2.0 (https://learn.microsoft.com/exchange/client-developer/legacy-protocols/how-to-authenticate-an-imap-pop-smtp-application-by-using-oauth),
+// High Volume Email for internal-only mail. Microsoft Graph sendMail is the usual app alternative (not named on MC786329).
+const SMTP_BASIC_AUTH_DEFAULT_OFF = '2026-12-31';
+const SMTP_HOST = /\b(smtp\.office365\.com|smtp-mail\.outlook\.com)\b/i;
+const SMTP_OAUTH = /SaslMechanismOAuth2|XOAUTH2|Microsoft\.Graph|SendMail/i;
+const SMTP_FILE = /\.(cs|vb|fs)$|^appsettings[\w.-]*\.json$|\.config$|\.env\.example$|\.ya?ml$/i;
+
 const SKIP_DIRS = new Set(['node_modules', 'bin', 'obj', '.git', '.vs', 'packages', 'dist']);
 const PROJECT_EXT = /\.(cs|fs|vb)proj$|^Directory\.Build\.props$/i;
 const COMPOSE_FILE = /^(docker-)?compose[\w.-]*\.ya?ml$/i;
@@ -315,7 +328,8 @@ function findingsForFile(file, root, solutions) {
   const isPackagesConfig = name.toLowerCase() === 'packages.config';
   const isSolution = /\.slnx?$/i.test(name);
   const isYaml = YAML_FILE.test(name);
-  if (!isProject && !isDocker && !isGlobalJson && !isPackagesConfig && !isSolution && !isYaml) return [];
+  const isSmtpCandidate = SMTP_FILE.test(name);
+  if (!isProject && !isDocker && !isGlobalJson && !isPackagesConfig && !isSolution && !isYaml && !isSmtpCandidate) return [];
   const text = read(file);
   if (text === null) return [];
 
@@ -331,10 +345,21 @@ function findingsForFile(file, root, solutions) {
       note: 'packages.config is only used by .NET Framework projects; a move to .NET 10 also means moving to PackageReference' }];
   }
   const out = [];
+  if (isSmtpCandidate) out.push(...smtpFindings(rel, text));
   if (COMPOSE_FILE.test(name)) out.push(...dockerImageFindings(rel, text));
   if (/(^|\/)\.github\/workflows\//.test(rel)) out.push(...githubActionsFindings(rel, text));
   if (/UseDotNet@/.test(text)) out.push(...azurePipelinesFindings(rel, text));
   return out;
+}
+
+// One finding per file; only host names are reported, never the matching line or any value around it.
+function smtpFindings(rel, text) {
+  const m = text.match(SMTP_HOST);
+  if (!m) return [];
+  const host = m[1].toLowerCase();
+  if (SMTP_OAUTH.test(text)) return [{ file: rel, kind: 'Exchange Online SMTP AUTH', value: host, eol: null, note: 'OAuth detected — verify' }];
+  return [{ file: rel, kind: 'Exchange Online SMTP AUTH', value: host, eol: SMTP_BASIC_AUTH_DEFAULT_OFF,
+    note: 'Basic auth SMTP to Exchange Online is being retired (disabled by default for existing tenants at end of December 2026; final removal date TBA); move to OAuth 2.0 or Microsoft Graph' }];
 }
 
 function classify(f, today, warnDays) {

@@ -79,4 +79,20 @@ t(() => assert.strictEqual(cli(path.join(fixture, 'does-not-exist')).status, 2))
 t(() => assert.match(execFileSync(process.execPath, [path.join(__dirname, '..', 'index.js'), '--help'], { encoding: 'utf8' }), /--fail-on/));
 t(() => assert.strictEqual(JSON.parse(cli(fixture, '--json', '--fail-on', 'never').stdout).solutions[0].projects, 3));
 
+// Exchange Online SMTP AUTH
+const smtp = f.filter((x) => x.kind === 'Exchange Online SMTP AUTH');
+t(() => assert.strictEqual(smtp.length, 3, 'one finding per file'));
+t(() => assert.strictEqual(by('Mail/MailService.cs', 'smtp.office365.com').status, 'SOON'));
+t(() => assert.strictEqual(by('Mail/MailService.cs', 'smtp.office365.com').eol, '2026-12-31'));
+t(() => assert.match(by('Mail/MailService.cs', 'smtp.office365.com').note, /OAuth 2.0 or Microsoft Graph/));
+t(() => assert.strictEqual(smtp.filter((x) => x.file === 'Mail/MailService.cs').length, 1, 'two matches in one file = one finding'));
+t(() => assert.strictEqual(by('Notify/appsettings.json', 'smtp-mail.outlook.com').status, 'SOON'));
+t(() => assert.strictEqual(by('Mail/OAuthMailService.cs', 'smtp.office365.com').status, 'INFO'));
+t(() => assert.strictEqual(by('Mail/OAuthMailService.cs', 'smtp.office365.com').note, 'OAuth detected — verify'));
+t(() => assert.strictEqual(scan(fixture, new Date('2027-01-01T00:00:00Z'), 90).find((x) => x.file === 'Mail/MailService.cs').status, 'EOL'));
+for (const fmt of ['text', 'md', 'json']) {
+  const out = render(f, fmt, today);
+  t(() => assert.ok(!/S3cretPassw0rd|noreply@example|alerts@example|NetworkCredential|EnableSsl/.test(out), 'no secrets or source lines in ' + fmt + ' output'));
+}
+
 console.log(`OK - ${f.length} findings, ${checks} assertions passed`);

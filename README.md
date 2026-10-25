@@ -33,6 +33,8 @@ node index.js /path/to/your/repo
 [SOON] Funcs/Funcs.csproj  Azure Functions: in-process model  end of support: 2026-11-10 (17 days left)
          Must move to isolated worker model before upgrading to .NET 10
 [SOON] .github/workflows/ci.yml  GitHub Actions setup-dotnet: 8.0  end of support: 2026-11-10 (17 days left)
+[SOON] Mail/MailService.cs  Exchange Online SMTP AUTH: smtp.office365.com  end of support: 2026-12-31 (68 days left)
+         Basic auth SMTP to Exchange Online is being retired (disabled by default for existing tenants at end of December 2026; final removal date TBA); move to OAuth 2.0 or Microsoft Graph
 [SOON] Props/Lib/Lib.csproj  TargetFramework: net8.0  end of support: 2026-11-10 (17 days left)
          Resolved from $(LibTfms) in Props/Directory.Build.props
 [INFO] Legacy/packages.config  packages.config: 2 packages (net461)  end of support: -
@@ -63,6 +65,7 @@ Solutions: 1 (3 projects referenced)
 | `Dockerfile`, `*.dockerfile`, `docker-compose*.yml`, `compose*.yml` | `mcr.microsoft.com/dotnet/{sdk,aspnet,runtime,runtime-deps}` tags |
 | `.github/workflows/*.yml` | `actions/setup-dotnet` `dotnet-version` (single value, list, or `${{ matrix.x }}`) |
 | Any `*.yml` with `UseDotNet@` | Azure Pipelines `UseDotNet` task `version` |
+| `*.cs`, `*.vb`, `*.fs`, `appsettings*.json`, `*.config`, `*.env.example`, `*.yml`/`*.yaml` | References to `smtp.office365.com` / `smtp-mail.outlook.com` (Exchange Online SMTP AUTH). One finding per file, host name only, never the matching line or any credential. Files that also show OAuth (`SaslMechanismOAuth2`, `XOAUTH2`, `Microsoft.Graph`, `SendMail`) are `INFO` ("OAuth detected — verify") |
 | `*.sln`, `*.slnx` | Only counted, to show how many projects the solutions reference |
 
 `bin`, `obj`, `node_modules`, `packages`, `.git`, `.vs` and `dist` folders are skipped.
@@ -107,6 +110,7 @@ The key step:
 - It checks the .NET runtime and SDK, not NuGet packages. Use `dotnet list package --vulnerable` and `dotnet list package --outdated` for those.
 - `netstandard*` is a library target, not a runtime; it is listed as `OK`.
 - .NET Framework 4.7–4.8.1 have no fixed end date (they follow the Windows version they run on), so they are shown as `INFO`.
+- Exchange Online SMTP AUTH: Microsoft says Basic auth is disabled by default for existing tenants at the end of December 2026 (admins can re-enable it) and will announce the final removal date in the second half of 2027. Microsoft gives only the month, so the tool uses 2026-12-31 and the column "end of support" means "disabled by default" for this check. Detection is text-only: a host name in a file does not prove Basic auth is used, and OAuth detection is a keyword match, hence `INFO`. See the [Exchange Team announcement](https://techcommunity.microsoft.com/blog/exchange/updated-exchange-online-smtp-auth-basic-authentication-deprecation-timeline/4489835).
 - The support dates are built into the tool (see the sources in `index.js`). Check the [official .NET support policy](https://dotnet.microsoft.com/platform/support/policy/dotnet-core) and [.NET Framework lifecycle](https://learn.microsoft.com/lifecycle/products/microsoft-net-framework) for anything critical, and update the tool when new versions ship.
 
 ## Development
